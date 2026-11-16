@@ -1,0 +1,28 @@
+flowchart LR
+    A[HAPI FHIR R4 API\nPatient • Encounter • Observation • Condition]
+    B[01_fhir_ingestion\nSpark / PySpark\nIncremental + Pagination]
+    R[FHIR_Raw_Lakehouse\nFiles/raw/\nDate-partitioned JSON]
+    C[02_raw_to_bronze\nSpark / PySpark]
+    BR[FHIR_Bronze_Lakehouse\nDelta Tables\nSource + ingestion metadata]
+    D[03_bronze_to_silver\nSpark / PySpark]
+    S[FHIR_Silver_Lakehouse\nCleaned + Deduplicated\nSCD Type 2]
+    E[04_silver_to_gold\nSpark / PySpark]
+    G[FHIR_Gold_Warehouse\nDim / Fact Tables]
+    V[Reporting / Analytics\nOptional Power BI]
+
+    A -->|FHIR REST API| B
+    B -->|Raw JSON responses| R
+    R --> C
+    C -->|Structured Delta| BR
+    BR --> D
+    D -->|Clean + SCD2| S
+    S --> E
+    E -->|Analytical serving| G
+    G --> V
+
+    P[FHIR_Ingestion_Pipeline\n01 → 02 → 03 → 04 → 05]
+    P -. orchestrates .-> B
+    P -. orchestrates .-> C
+    P -. orchestrates .-> D
+    P -. orchestrates .-> E
+    P -. orchestrates .-> F
